@@ -1,5 +1,6 @@
-
 <?php
+toJson("sample.csv");
+
 function toJson($file){
 	//getting data
 		$open = fopen($file,"r+");
@@ -7,43 +8,51 @@ function toJson($file){
 	//in case of wrong file
 		if(!$open){
 			echo "Wrong file!";
-			die;
+			die();
 		} else {
 			echo "Fitting file, time to proceed!\n";
 		}
 		$data = array();
-		$arranged = array();
+		$transactions = array();
 	
 	while($content=fgetcsv($open, 1024, ",")){
-		$arr[]=$content;
+		$transactions[]=$content;
 	}
-	$head = $arr[0];
+	//var_dump($transactions);
+	//die();
 	
-	$arr[0][1]="\ntime: ";
-	$arr[0][3]="type: ";
-	$arr[0][4]="buy_currency: ";
-	$arr[0][5]="buy: ";
+	
+	
+	$headers = array_shift($transactions);
+	
+	/*$transactions[0][1]="\ntime: ";
+	$transactions[0][3]="type: ";
+	$transactions[0][4]="buy_currency: ";
+	$transactions[0][5]="buy: ";
+	*/
 
-	$one = array();
 
-	//function getLines() requires two arrays and an 
-	function getLines($input, $container){
-		$b = count($input);
-		for($a=1;$a<=$b;$a++){
-			$d = $input[0][$a];
-			$e = $input[$a];
-			$f = "${d} ${e},\n";
-			array_push($container, $f);
-		}
+	//function getLines() requires two arrays
+	
+	
+	$lines = getLines($transactions, $headers);
+
+	foreach($lines as $line){
+		echo $line;
 	}
-
-	getLines($arr[1], $one);
-	print_r($one);
 	
 
-	// print_r($arr);
+	// print_r($transactions);
 }
 
-toJson("sample.csv");
+
+function getLines($transactions, $headers){
+//var_dump($input); die();
+	$lines = [];
+	foreach ($transactions as $transaction){
+		$lines[] = $headers[3] . ": " . $transaction[3] . ",\n";
+	}
+	return $lines;
+}
 
 ?>
