@@ -25,11 +25,11 @@ function toJson($file){
 	
 	$headers = array_shift($transactions);
 	
-	/*$transactions[0][1]="\ntime: ";
-	$transactions[0][3]="type: ";
-	$transactions[0][4]="buy_currency: ";
-	$transactions[0][5]="buy: ";
-	*/
+	$headers[1]="\ntime";
+	$headers[3]="type";
+	$headers[4]="buy_currency";
+	$headers[5]="buy";
+	
 
 
 	//function getLines() requires two arrays
@@ -40,7 +40,6 @@ function toJson($file){
 	foreach($lines as $line){
 		echo $line;
 	}
-	
 
 	// print_r($transactions);
 }
@@ -50,8 +49,16 @@ function getLines($transactions, $headers){
 //var_dump($input); die();
 	$lines = [];
 	foreach ($transactions as $transaction){
+		$lines[] = "{\n";
+		$lines[] = $headers[0] . ": " . $transaction[0] . ",\n";
+		$lines[] = $headers[1] . ": " . strtotime($transaction[1]) . ",\n";
+		$lines[] = $headers[2] . ": " . $transaction[2] . ",\n";
 		$lines[] = $headers[3] . ": " . $transaction[3] . ",\n";
-	}
+		$lines[] = $headers[4] . ": " . $transaction[4] . ",\n";
+		$lines[] = $headers[5] . ": " . $transaction[5] . ",\n";
+		$lines[] = $headers[6] . ": " . $transaction[6] . ",\n";
+		$lines[] = "},\n";
+	} 
 	return $lines;
 }
 
