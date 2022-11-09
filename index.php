@@ -12,54 +12,47 @@ function toJson($file){
 		} else {
 			echo "Fitting file, time to proceed!\n";
 		}
-		$data = array();
-		$transactions = array();
+	date_default_timezone_set('Europe/Berlin');
+	$contents = [];	
 	
-	while($content=fgetcsv($open, 1024, ",")){
-		$transactions[]=$content;
+	
+	while($data = fgetcsv($open, 1024, ",")){
+		$contents[] = $data;
 	}
-	//var_dump($transactions);
-	//die();
 	
 	
 	
-	$headers = array_shift($transactions);
+	$headers = array_shift($contents);
 	
-	$headers[1]="\ntime";
+	/*$headers[1]="\ntime";
 	$headers[3]="type";
 	$headers[4]="buy_currency";
-	$headers[5]="buy";
-	
+	$headers[5]="buy";*/
+}
 
 
-	//function getLines() requires two arrays
-	
-	
-	$lines = getLines($transactions, $headers);
 
-	foreach($lines as $line){
-		echo $line;
+class Transaction{
+
+	function __construct(){
+		
+			$transaction -> time = strtotime($content[1]);
+			$transaction -> type = $content[3];
+			if ($content[5]<0){
+				$transaction -> sell_currency = $content[4];
+				$transaction -> sell = 0 - $content[5];
+			} else {
+			$transaction -> buy_currency = $content[4];
+			$transaction -> buy = $content[5];
+			}	
+		
 	}
-
-	// print_r($transactions);
 }
+$transactions = [];
+foreach ($contents as $content){
+	$transactions[] = new Transaction();
+	}
+	// The problem is: even if I could launch this, how am I going to refer to these new objects? They'd have no given name.
 
-
-function getLines($transactions, $headers){
-//var_dump($input); die();
-	$lines = [];
-	foreach ($transactions as $transaction){
-		$lines[] = "{\n";
-		$lines[] = $headers[0] . ": " . $transaction[0] . ",\n";
-		$lines[] = $headers[1] . ": " . strtotime($transaction[1]) . ",\n";
-		$lines[] = $headers[2] . ": " . $transaction[2] . ",\n";
-		$lines[] = $headers[3] . ": " . $transaction[3] . ",\n";
-		$lines[] = $headers[4] . ": " . $transaction[4] . ",\n";
-		$lines[] = $headers[5] . ": " . $transaction[5] . ",\n";
-		$lines[] = $headers[6] . ": " . $transaction[6] . ",\n";
-		$lines[] = "},\n";
-	} 
-	return $lines;
-}
 
 ?>
