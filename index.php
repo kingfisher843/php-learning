@@ -2,6 +2,7 @@
 
 toJson("sample.csv");
 
+$contents = [];
 // toJson read the data as the csv file and push it into array $contents
 function toJson($file){
 	//getting data
@@ -15,9 +16,10 @@ function toJson($file){
 		echo "Fitting file, time to proceed!\n";
 	}
 	
-	$contents = [];	
+	
 	
 	// pushing data into $contents
+	
 	while($data = fgetcsv($open, 1024, ",")){
 		$contents[] = $data;
 	}
@@ -26,47 +28,44 @@ function toJson($file){
 	
 	// Extracting headers from contents
 	$headers = array_shift($contents);
-	
-	/*$headers[1]="\ntime";
-	$headers[3]="type";
-	$headers[4]="buy_currency";
-	$headers[5]="buy";*/
+	// Returning
+	return $contents;
 }
-// ToJson IS PERFECTLY FINE
+
 
 date_default_timezone_set('Europe/Berlin');
-$transactions = [];
-Mincer($contents);
-Merge($transactions);
-class Transaction{}
 
+class Transaction{
+public $time, $type, $sell_currency, $sell, $buy_currency, $buy;
+}
+$transactions = [];
 // Mincer() should take $contents and 'shape' its subarrays into objects
-function Mincer($contents) {
+function Mincer($contents, $transactions) {
 			
 	foreach ($contents as $content){
+	$object = new Transaction();
+	$object -> time = strtotime($content[1]);
+	$object -> type = $content[3];
 
-		$object = new Transaction();
+	if ($content[5] < 0){
+		$object -> sell_currency = $content[4];
+		$object -> sell = 0 - $content[5];
 
-		$object -> time = strtotime($content[1]);
-		$object -> type = $content[3];
-
-		if ($content[5]<0){
-			$object -> sell_currency = $content[4];
-			$object -> sell = 0 - $content[5];
-
-		} else {
+	} else {
 			$object -> buy_currency = $content[4];
 			$object -> buy = $content[5];
-		}
-		$transactions[] = $object;
 	}
-	
-}
 
+		$transactions[] = $object;
+		print_r($transactions);
+	}
+}
+Mincer($contents, $transactions);
+Merge($transactions);
 
 // Merge() should take arrays of object, merge the proper ones, and remove leftovers
 function Merge($transactions)
-{
+{	$merged_object = [];
 	foreach ($transactions as $transaction){
 		$time = $transaction -> time;
 		$type = $transaction -> type;
@@ -80,8 +79,7 @@ function Merge($transactions)
 				$type_2 = $transaction -> type;
 				$other_transaction = current($transaction);
 				if ($time === $time_2 && ($type_2 === "Buy" || $type_2 === "Sell" ) && $current_transaction !== $other_transaction){
-
-					$merged_object = (object) array_merge((array)$current_transaction, (array)$other_transaction);
+					$merged_object[] = (object) array_merge((array)$current_transaction, (array)$other_transaction);
 					// I need these two messages for testing
 					echo "Objects merged!/n";
 				}else{
@@ -91,8 +89,8 @@ function Merge($transactions)
 			}
 		}
 	}
+	var_dump($merged_object);
 }
-var_dump($merged_object);
 
 
 ?>
