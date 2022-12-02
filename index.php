@@ -22,21 +22,28 @@ function toJson($file){
 		$contents[] = $data;
 	}
 
-	
-	// Extracting headers from contents
-	$headers = array_shift($contents);
 	// Returning
 	return $contents;
 }
+
 $contents = toJson("sample.csv");
+// Extracting headers from contents
+	$headers = array_shift($contents);
 
 date_default_timezone_set('Europe/Berlin');
 
 class Transaction{
+	public int $time;
+	public string $type;
+	public string $sell_currency;
+	public float $sell;
+	public string $buy_currency;
+	public float $buy;
+
 }
 
-// Mincer() should take $contents and 'shape' its subarrays into objects
-function Mincer($contents) {
+// mincer() should take $contents and 'shape' its subarrays into objects
+function mincer($contents) {
 			
 	foreach ($contents as $content){
 	$object = new Transaction();
@@ -58,43 +65,97 @@ function Mincer($contents) {
 	return $transactions;
 }
 
-$transactions = Mincer($contents);
+$transactions = mincer($contents);
 
 
 
+// merge() should take arrays of object, merge the proper ones, and remove leftovers
 
-
-// Merge() should take arrays of object, merge the proper ones, and remove leftovers
-
-function Merge($transactions)
+function merge($transactions)
 {
 	$transactions_merged = [];
-	foreach ($transactions as $transaction){
-	
-		$time = $transaction -> time;
-		$current = current($transactions);
-		$type = $transaction -> type;	
-		if ($type === "Buy" || $type === "Sell"){
+	while (count($transactions)){
+		$transaction = array_shift($transactions);
+		if ($transaction->type === "Buy" || $transaction->type === "Sell"){
+			$merged = false;
+			foreach($transactions as $key => $pairable){
 
-			foreach($transactions as $transaction){
-
-				$time_2 = $transaction -> time;
-				$type_2 = $transaction -> type;
-				$other_transaction = current($transactions);
-				if ($time === $time_2 && ($type_2 === "Buy" || $type_2 === "Sell" ) && $current !== $other_transaction){
-					$transactions_merged[] = (object) array_merge((array)$current, (array)$other_transaction);
-					
+				if (isMergable($transaction, $pairable)) {
+					$transactions_merged[]= mergeTransactions($transaction, $pairable);
 					// I need these two messages for testing
-					echo "Objects merged!/n";
-					unset($transactions[$current_transaction]);
-					unset($transactions[$other_transaction]);
+						//echo "Objects merged!\n";
+					unset($transactions[$key]);
+					$merged = true;
+					$break;
 				}
 			}
+
 		} else {
-			echo "no match \n";
+			//echo "it has no type required to merge\n";
+			$transactions_merged[] = $transaction;
 		}
+
+	}
+	return $transactions_merged;
+}
+
+function isMergable(Transaction $t1, Transaction $t2) {
+	$result = false;
+	if ($t1->time !== $t2->time ){
+		//echo "Different time!\n";
+		$result = false;
+	} elseif ($t1->type !== $t2->type){
+		//echo "Different type!\n";
+		$result = false;
+	} elseif (isset($t1->buy) && isset($t2->buy)){
+		//echo "Can't be both buy!\n";
+	} elseif (isset($t1->sell) && isset($t2->sell)){
+		//echo "Can't be both sell!\n";
+	} else {
+		$result = true;
+	}
+	return $result;
+}
+function mergeTransactions(Transaction $t1, Transaction $t2){
+	if (isset($t1->buy)) {
+		$t1->sell = $t2->sell;
+		$t1->sell_currency = $t2->sell_currency;
+	} else {
+		$t1->buy = $t2->buy;
+		$t1->buy_currency = $t2->buy_currency;
+	}
+	$t1->type = "Trade";
+	return $t1;
+}
+	
+$transactions_merged [] = merge($transactions);
+
+printToJson($transactions_merged);
+// print_r($transactions_merged);
+
+
+function printToJson(array $transactions_merged){
+	foreach ($transactions_merged as $object){
+		printObject($object);
 	}
 }
-$transactions_merged [] = Merge($transactions);
-print_r($transactions_merged);
+	
+function printObject($object){
+	foreach($object as $obj){
+		echo "time: " . $obj->time . "\n";
+		echo "type:" . $obj->type . "\n";
+		if (isset($obj->buy)){
+			echo "buy_currency: " . $obj->buy_currency . "\n";
+			echo "buy: " . $obj->buy . "\n";
+		}
+		if (isset($obj->sell)){
+			echo "buy_currency: " . $obj->sell_currency . "\n";
+			echo "buy: " . $obj->sell . "\n";
+		}
+		echo "\n";
+	}
+}
+
+
+
 ?>
