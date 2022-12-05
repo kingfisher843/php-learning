@@ -131,28 +131,28 @@ function mergeTransactions(Transaction $t1, Transaction $t2){
 $transactions_merged [] = merge($transactions);
 
 printToJson($transactions_merged);
-// print_r($transactions_merged);
+ //print_r($transactions_merged);
 
 
 function printToJson(array $transactions_merged){
-	foreach ($transactions_merged as $object){
-		printObject($object);
-	}
+foreach($transactions_merged as $object){}
+	printObject($object);
 }
 	
 function printObject($object){
-	foreach($object as $obj){
-		echo "time: " . $obj->time . "\n";
-		echo "type:" . $obj->type . "\n";
+foreach ($object as $obj){
+		echo "{\n";
+		echo "\"time\": " . $obj -> time . ",\n";
+		echo "\"type\":" . $obj -> type . ",\n";
 		if (isset($obj->buy)){
-			echo "buy_currency: " . $obj->buy_currency . "\n";
-			echo "buy: " . $obj->buy . "\n";
+			echo "\"buy_currency\": " . $obj -> buy_currency . ",\n";
+			echo "\"buy\": " . $obj->buy . ",\n";
 		}
 		if (isset($obj->sell)){
-			echo "buy_currency: " . $obj->sell_currency . "\n";
-			echo "buy: " . $obj->sell . "\n";
+			echo "\"sell_currency\": " . $obj->sell_currency . ",\n";
+			echo "\"buy\": " . $obj->sell . ",\n";
 		}
-		echo "\n";
+		echo "}\n";
 	}
 }
 
