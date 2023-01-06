@@ -49,6 +49,8 @@ function mincer($contents) {
 	$object = new Transaction();
 	$object -> time = strtotime($content[1]);
 	$object -> type = $content[3];
+	if ($object -> type = "Fee"){
+	}
 
 	if ($content[5] < 0){
 		$object -> sell_currency = $content[4];
@@ -89,7 +91,10 @@ function merge($transactions)
 					$break;
 				}
 			}
-
+			if ($merged === false ) {
+                print_r($transactions_merged);
+                throw new Exception("without a match");
+				}
 		} else {
 			//echo "it has no type required to merge\n";
 			$transactions_merged[] = $transaction;
@@ -130,35 +135,24 @@ function mergeTransactions(Transaction $t1, Transaction $t2){
 	
 $transactions_merged [] = merge($transactions);
 
+
 printToJson($transactions_merged);
  //print_r($transactions_merged);
 
 
 function printToJson(array $transactions_merged){
-	echo "[\n";
+
 	foreach($transactions_merged as $object){
-	printObject($object);
+	//printObject($object);
+	$json_obj = json_encode($object, JSON_PRETTY_PRINT);
+	echo $json_obj;
 	}
-	echo "]\n";
 }
 	
-function printObject(
-$object){
-foreach ($object as $obj){
-		echo "{\n";
-		echo "\"time\": " . "\"" . $obj -> time . "\"" . ",\n";
-		echo "\"type\": " . "\"" . $obj -> type . "\"" . ",\n";
-		if (isset($obj->buy)){
-			echo "\"buy_currency\": " . "\"" . $obj -> buy_currency . "\"" . ",\n";
-			echo "\"buy\": " . "\"" . $obj-> buy . "\"" . ",\n";
-		}
-		if (isset($obj->sell)){
-			echo "\"sell_currency\": " . "\"" . $obj->sell_currency . "\"" . ",\n";
-			echo "\"buy\": " . "\"" . $obj->sell . "\"" . ",\n";
-		}
-		echo "}\n";
-	}
-}
+
+//$json = json_encode($transactions_merged, JSON_PRETTY_PRINT);
+//echo $json;
+
 
 
 
