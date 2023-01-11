@@ -26,13 +26,14 @@ function toJson($file){
 	return $contents;
 }
 
-$contents = toJson("sample.csv");
+$contents = toJson($argv[1]);
+
 // Extracting headers from contents
 	$headers = array_shift($contents);
 
 date_default_timezone_set('Europe/Berlin');
 
-class Transaction{
+class Transaction {
 	public int $time;
 	public string $type;
 	public string $sell_currency;
@@ -42,7 +43,7 @@ class Transaction{
 
 }
 
-// mincer() should take $contents and 'shape' its subarrays into objects
+// mincer() should take $contents and shape its subarrays into objects
 function mincer($contents) {
 			
 	foreach ($contents as $content){
@@ -138,6 +139,7 @@ $transactions_merged [] = merge($transactions);
 
 printToJson($transactions_merged);
  //print_r($transactions_merged);
+
 
 
 function printToJson(array $transactions_merged){
