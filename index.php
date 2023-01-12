@@ -85,7 +85,6 @@ function merge($transactions)
 
 				if (isMergable($transaction, $pairable)) {
 					$transactions_merged[]= mergeTransactions($transaction, $pairable);
-					// I need these two messages for testing
 						//echo "Objects merged!\n";
 					unset($transactions[$key]);
 					$merged = true;
@@ -122,7 +121,8 @@ function isMergable(Transaction $t1, Transaction $t2) {
 	}
 	return $result;
 }
-function mergeTransactions(Transaction $t1, Transaction $t2){
+function mergeTransactions(Transaction $t1, Transaction $t2)
+{
 	if (isset($t1->buy)) {
 		$t1->sell = $t2->sell;
 		$t1->sell_currency = $t2->sell_currency;
@@ -135,26 +135,58 @@ function mergeTransactions(Transaction $t1, Transaction $t2){
 }
 	
 $transactions_merged [] = merge($transactions);
+$fees = [];
+$trades = [];
+$others = [];
 
+function sortByType($array)
+{
 
-printToJson($transactions_merged);
- //print_r($transactions_merged);
+	switch ($array[0]) {
+	case 'Fee':
+		$fees [] = $array;
+		break;
+	case 'Trade':
+		$trades [] = $array;
+		break;
+	default:
+		$others [] = $array;
+		break;
+	}
 
-
-
-function printToJson(array $transactions_merged){
-
-	foreach($transactions_merged as $object){
-	//printObject($object);
-	$json_obj = json_encode($object, JSON_PRETTY_PRINT);
-	echo $json_obj;
+function grandSorting($transactions_merged)
+{
+	while(count($transactions_merged)) {
+	$transaction = $array_shift($transactions_merged)
+	sortByType($transaction);
 	}
 }
-	
 
-//$json = json_encode($transactions_merged, JSON_PRETTY_PRINT);
-//echo $json;
+}
+grandSorting($transactions_merged);
+print_r($fees);
+print_r($trades);
+print_r($others);
+$transactions_sorted = grandSorting($transactions_merged);
 
+
+// dopóki czas siê nie zmieni
+# trzy tablice: fee, trade, other
+
+
+
+
+//printToJson($transactions_merged);
+
+/*function printToJson(array $transactions_merged)
+{
+
+	foreach($transactions_merged as $object) {
+	echo json_encode($object, JSON_PRETTY_PRINT);
+
+	}
+}
+*/
 
 
 
