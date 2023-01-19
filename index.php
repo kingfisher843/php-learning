@@ -50,8 +50,6 @@ function mincer($contents) {
 	$object = new Transaction();
 	$object -> time = strtotime($content[1]);
 	$object -> type = $content[3];
-	if ($object -> type = "Fee"){
-	}
 
 	if ($content[5] < 0){
 		$object -> sell_currency = $content[4];
@@ -135,58 +133,92 @@ function mergeTransactions(Transaction $t1, Transaction $t2)
 }
 	
 $transactions_merged [] = merge($transactions);
-$fees = [];
-$trades = [];
-$others = [];
 
-function sortByType($array)
+
+/*
+
+function timestampSort ($arr1, $arr2){
+	foreach ($transactions_merged as $key => $node) {
+   $timestamps[$key] = $node[0];
+}
+array_multisort($timestamps, SORT_ASC, $transactions_merged);
+}
+timestampSort($transactions_merged);
+*/
+
+
+// sortinhHat() takes $transactions_merged and sorts them into $transactions_sorted
+		
+function sortingHat($transactions_merged)
 {
+	$transactions_sorted = [];
+	while (count($transactions_merged)) {
 
-	switch ($array[0]) {
-	case 'Fee':
-		$fees [] = $array;
-		break;
-	case 'Trade':
-		$trades [] = $array;
-		break;
-	default:
-		$others [] = $array;
-		break;
+		$firstTr = array_shift($transactions_merged);
+
+		$trades = [];
+		$fees = [];
+		$rest = [];
+
+		//first element is dumped to $transactions_sorted as it is
+		$transactions_sorted [] = $firstTr;
+		
+		while (count($transactions_merged)) {
+
+			$otherTr = array_shift($transactions_merged);
+
+			if (timeCompare($firstTr, $otherTr) === false) {
+
+				$trades = [];
+				$fees = [];
+				$rest = [];
+				$firstTr = $otherTr;
+
+			}
+
+			switch ($otherTr[3]) {
+				case 'Trade':
+				$trades [] = $otherTr;
+				break;
+				case 'Fee':
+				$fees [] = $otherTr;
+				break;
+				default:
+				$rest [] = $otherTr;
+				break;
+			}
+			
+			for ($i = 0; $i <= count($trades); $i ++) {
+
+				$transactions_sorted [] = array_shift($trades);
+				$transactions_sorted [] = array_shift($fees);	
+			}
+			$transactions_sorted [] = array_merge($transactions_sorted, $rest);
+		}
 	}
+	return $transactions_sorted;
+}
 
-function grandSorting($transactions_merged)
-{
-	while(count($transactions_merged)) {
-	$transaction = $array_shift($transactions_merged)
-	sortByType($transaction);
+
+function timeCompare($tr1,$tr2) {
+	if ($tr1['time'] !== $tr2['time'])	{
+		return false;
 	}
 }
 
-}
-grandSorting($transactions_merged);
-print_r($fees);
-print_r($trades);
-print_r($others);
-$transactions_sorted = grandSorting($transactions_merged);
 
+$transactions_sorted = sortingHat($transactions_merged);
+//printToJson($transactions_sorted);
 
-// dopóki czas siê nie zmieni
-# trzy tablice: fee, trade, other
-
-
-
-
-//printToJson($transactions_merged);
-
-/*function printToJson(array $transactions_merged)
+function printToJson(array $transactions_sorted)
 {
 
-	foreach($transactions_merged as $object) {
+	foreach($transactions_sorted as $object) {
 	echo json_encode($object, JSON_PRETTY_PRINT);
 
 	}
 }
-*/
+
 
 
 
