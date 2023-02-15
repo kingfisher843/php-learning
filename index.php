@@ -49,7 +49,11 @@ function mincer($contents) {
 	foreach ($contents as $content){
 	$object = new Transaction();
 	$object -> time = strtotime($content[1]);
+	if ($content[3] === "Fee") {
+		$object -> type = "Other fee";
+	} else {
 	$object -> type = $content[3];
+	}
 
 	if ($content[5] < 0){
 		$object -> sell_currency = $content[4];
@@ -86,7 +90,7 @@ function merge($transactions)
 						//echo "Objects merged!\n";
 					unset($transactions[$key]);
 					$merged = true;
-					$break;
+					break;
 				}
 			}
 			if ($merged === false ) {
@@ -134,80 +138,94 @@ function mergeTransactions(Transaction $t1, Transaction $t2)
 	
 $transactions_merged [] = merge($transactions);
 
-
-/*
-
-function timestampSort ($arr1, $arr2){
-	foreach ($transactions_merged as $key => $node) {
-   $timestamps[$key] = $node[0];
+function sorter($a, $b){
+	return $a->time < $b->time;
 }
-array_multisort($timestamps, SORT_ASC, $transactions_merged);
-}
-timestampSort($transactions_merged);
-*/
-
-
-// sortinhHat() takes $transactions_merged and sorts them into $transactions_sorted
-		
-function sortingHat($transactions_merged)
-{
-	$transactions_sorted = [];
-	while (count($transactions_merged)) {
-
-		$firstTr = array_shift($transactions_merged);
-
-		$trades = [];
-		$fees = [];
-		$rest = [];
-
-		//first element is dumped to $transactions_sorted as it is
-		$transactions_sorted [] = $firstTr;
-		
-		while (count($transactions_merged)) {
-
-			$otherTr = array_shift($transactions_merged);
-
-			if (timeCompare($firstTr, $otherTr) === false) {
-
-				$trades = [];
-				$fees = [];
-				$rest = [];
-				$firstTr = $otherTr;
-
-			}
-
-			switch ($otherTr[3]) {
-				case 'Trade':
-				$trades [] = $otherTr;
-				break;
-				case 'Fee':
-				$fees [] = $otherTr;
-				break;
-				default:
-				$rest [] = $otherTr;
-				break;
-			}
-			
-			for ($i = 0; $i <= count($trades); $i ++) {
-
-				$transactions_sorted [] = array_shift($trades);
-				$transactions_sorted [] = array_shift($fees);	
-			}
-			$transactions_sorted [] = array_merge($transactions_sorted, $rest);
-		}
-	}
-	return $transactions_sorted;
-}
+usort ($transactions_merged, "sorter");
 
 
 function timeCompare($tr1,$tr2) {
-	if ($tr1['time'] !== $tr2['time'])	{
-		return false;
+	if ($tr1 -> time === $tr2 -> time)	{
+	return true;
 	}
 }
 
+function funkySort($arr1,$arr2,$arr3)
+{
+	$result = [];
 
-$transactions_sorted = sortingHat($transactions_merged);
+	for ($i = 0; $i < count($arr1); $i++){
+		$result [] = $arr1[$i];
+		$result [] = $arr2[$i];
+	}
+	$result [] = $arr3;
+	return $result;
+}
+
+function slicer($array)
+{
+	$chunk = [];
+	$sliced_array = [];
+
+		foreach ($array as $element){
+			for ($time = $element [0]-> time;  $time > $element[0] -> time; $time = current($element) -> time) {
+				$chunk [] = current($array);
+				$i ++;
+			}
+			$sliced_array = $chunk;
+		}
+		return $sliced_array;
+}
+
+// sortingHat() takes $transactions_merged and sorts them into $transactions_sorted
+
+function sortingHat($transactions_merged)
+{
+	$trades = [];
+	$fees = [];
+	$rest = [];
+	$transactions_sorted = [];
+	
+	$transactions_sliced = slicer($transactions_merged);
+	foreach ($transactions_sliced as $slice){
+		$result = funkySort($slice);
+		$$transactions_sorted [] = $result;
+	}
+/*
+	while (count($transactions_merged))	{
+
+		$transaction = array_shift($transactions_merged);
+
+			foreach($transactions_merged as $pairable)	{
+
+				if (timeCompare($transaction, $pairable) === true) {
+					switch ($pairable -> type)
+					{
+					case "Trade":
+					$trades [] = $pairable;
+					break;
+					case "Other fee":
+					$fees [] = $pairable;
+					break;
+					default:
+					$rest [] = $pairable;
+					break;
+					} 
+				}else {
+					$trades = [];
+					$fees = [];
+					$rest = [];
+				}
+				unset($transactions[$key]);
+				$result = funkySort($trades,$fees,$rest);
+				$transactions_sorted [] = $result;
+			}
+	}
+	*/
+	return $transactions_sorted;
+}
+
+$transactions_sorted =  [sortingHat($transactions_merged)];
 //printToJson($transactions_sorted);
 
 function printToJson(array $transactions_sorted)
@@ -219,7 +237,7 @@ function printToJson(array $transactions_sorted)
 	}
 }
 
-
+printToJson($transactions_sorted);
 
 
 ?>
