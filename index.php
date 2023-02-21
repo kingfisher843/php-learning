@@ -164,21 +164,76 @@ function funkySort($arr1,$arr2,$arr3)
 
 function slicer($array)
 {
-	$chunk = [];
-	$sliced_array = [];
 
-		foreach ($array as $element){
-			for ($time = $element [0]-> time;  $time > $element[0] -> time; $time = current($element) -> time) {
-				$chunk [] = current($array);
-				$i ++;
+	while(count($array)){
+	$chunk = [];
+	$chunked_array = [];
+		$slice = array_shift($array);
+		
+
+		foreach ($array as $object)	{
+			$chunk [] = $slice;
+			/*if ($slice === $object)	{
+				echo "They are the same";
+			} */ if ($slice -> time === $object -> time && $slice !== $object){
+			echo "time to merge";
+			$chunk [] = $object; 
+			} else {
+				$chunked_array [] = $chunk;
+				$chunk = [];
 			}
-			$sliced_array = $chunk;
+
 		}
-		return $sliced_array;
+
+		while(count($chunked_array)) {
+
+		$piece = array_shift($chunked_array);
+		
+		$slightly_chunked = [];
+			foreach ($chunked_array as $pairable) {
+				$big_chunk [] = $piece;
+				if ($piece === $pairable) {
+					echo "They are the same";
+				} else if ($piece[0] -> time === $pairable[0] -> time){
+				$big_chunk []= $pairable;
+				} else {
+					$slightly_chunked [] = $big_chunk;
+					$big_chunk = [];
+
+				}
+			}
+		}
+	}
 }
+
+$a = new Transaction;
+$a -> time = 13;
+$b = new Transaction;
+$b -> time = 13;
+$c = new Transaction;
+$c -> time = 22;
+$d = new Transaction;
+$d -> time = 22;
+$e = new Transaction;
+$e -> time = 22;
+$f = new Transaction;
+$f -> time = 36;
+$g = new Transaction;
+$g -> time = 36;
+$array = [$a, $b, $c, $d, $e, $f , $g];
+//print_r($array);
+
+echo "===========";
+$sliced_array = slicer($array);
+print_r($sliced_array);
+//slicer($array);
+
+
+
 
 // sortingHat() takes $transactions_merged and sorts them into $transactions_sorted
 
+/*
 function sortingHat($transactions_merged)
 {
 	$trades = [];
@@ -189,8 +244,10 @@ function sortingHat($transactions_merged)
 	$transactions_sliced = slicer($transactions_merged);
 	foreach ($transactions_sliced as $slice){
 		$result = funkySort($slice);
-		$$transactions_sorted [] = $result;
+		$transactions_sorted [] = $result;
 	}
+}
+	*/
 /*
 	while (count($transactions_merged))	{
 
@@ -221,12 +278,11 @@ function sortingHat($transactions_merged)
 				$transactions_sorted [] = $result;
 			}
 	}
-	*/
+	
 	return $transactions_sorted;
 }
-
-$transactions_sorted =  [sortingHat($transactions_merged)];
-//printToJson($transactions_sorted);
+*/
+ 
 
 function printToJson(array $transactions_sorted)
 {
@@ -236,8 +292,8 @@ function printToJson(array $transactions_sorted)
 
 	}
 }
-
-printToJson($transactions_sorted);
+//$transactions_sorted [] =  sortingHat($transactions_merged);printToJson($transactions_sorted);
+// printToJson($transactions_sorted);
 
 
 ?>
