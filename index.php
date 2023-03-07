@@ -1,3 +1,4 @@
+
 <?php
 
 
@@ -8,16 +9,15 @@ function toJson($file){
 
 	//in case of wrong file
 	if(!$open){
-		echo "Wrong file!";
-		die();
+		die("Wrong file!");
 	} else {
 		echo "Fitting file, time to proceed!\n";
 	}
-	
-	
-	
+
+
+
 	// pushing data into $contents
-	
+
 	while($data = fgetcsv($open, 1024, ",")){
 		$contents[] = $data;
 	}
@@ -45,7 +45,7 @@ class Transaction {
 
 // mincer() should take $contents and shape its subarrays into objects
 function mincer($contents) {
-			
+
 	foreach ($contents as $content){
 	$object = new Transaction();
 	$object -> time = strtotime($content[1]);
@@ -54,7 +54,6 @@ function mincer($contents) {
 	} else {
 	$object -> type = $content[3];
 	}
-
 	if ($content[5] < 0){
 		$object -> sell_currency = $content[4];
 		$object -> sell = 0 - $content[5];
@@ -65,7 +64,7 @@ function mincer($contents) {
 	}
 
 		$transactions[] = $object;
-		
+
 	}
 	return $transactions;
 }
@@ -79,7 +78,7 @@ $transactions = mincer($contents);
 function merge($transactions)
 {
 	$transactions_merged = [];
-	while (count($transactions)){
+		while (count($transactions)){
 		$transaction = array_shift($transactions);
 		if ($transaction->type === "Buy" || $transaction->type === "Sell"){
 			$merged = false;
@@ -106,6 +105,7 @@ function merge($transactions)
 	return $transactions_merged;
 }
 
+
 function isMergable(Transaction $t1, Transaction $t2) {
 	$result = false;
 	if ($t1->time !== $t2->time ){
@@ -116,8 +116,10 @@ function isMergable(Transaction $t1, Transaction $t2) {
 		$result = false;
 	} elseif (isset($t1->buy) && isset($t2->buy)){
 		//echo "Can't be both buy!\n";
+		$result = false;
 	} elseif (isset($t1->sell) && isset($t2->sell)){
 		//echo "Can't be both sell!\n";
+		$result = false;
 	} else {
 		$result = true;
 	}
@@ -135,7 +137,7 @@ function mergeTransactions(Transaction $t1, Transaction $t2)
 	$t1->type = "Trade";
 	return $t1;
 }
-	
+
 $transactions_merged [] = merge($transactions);
 
 function sorter($a, $b){
@@ -144,156 +146,103 @@ function sorter($a, $b){
 usort ($transactions_merged, "sorter");
 
 
-function timeCompare($tr1,$tr2) {
-	if ($tr1 -> time === $tr2 -> time)	{
-	return true;
-	}
-}
 
 function funkySort($arr1,$arr2,$arr3)
 {
-	$result = [];
+	$semifinal = [];
 
 	for ($i = 0; $i < count($arr1); $i++){
-		$result [] = $arr1[$i];
-		$result [] = $arr2[$i];
+		$semifinal[] = $arr1[$i];
+		$semifinal[] = $arr2[$i];
 	}
-	$result [] = $arr3;
+
+	$result = array_merge($semifinal,$arr3);
 	return $result;
 }
-
-function slicer($array)
-{
-
-	while(count($array)){
-	$chunk = [];
-	$chunked_array = [];
-		$slice = array_shift($array);
-		
-
-		foreach ($array as $object)	{
-			$chunk [] = $slice;
-			/*if ($slice === $object)	{
-				echo "They are the same";
-			} */ if ($slice -> time === $object -> time && $slice !== $object){
-			echo "time to merge";
-			$chunk [] = $object; 
-			} else {
-				$chunked_array [] = $chunk;
-				$chunk = [];
-			}
-
-		}
-
-		while(count($chunked_array)) {
-
-		$piece = array_shift($chunked_array);
-		
-		$slightly_chunked = [];
-			foreach ($chunked_array as $pairable) {
-				$big_chunk [] = $piece;
-				if ($piece === $pairable) {
-					echo "They are the same";
-				} else if ($piece[0] -> time === $pairable[0] -> time){
-				$big_chunk []= $pairable;
-				} else {
-					$slightly_chunked [] = $big_chunk;
-					$big_chunk = [];
-
-				}
-			}
-		}
-	}
-}
-
-$a = new Transaction;
-$a -> time = 13;
-$b = new Transaction;
-$b -> time = 13;
-$c = new Transaction;
-$c -> time = 22;
-$d = new Transaction;
-$d -> time = 22;
-$e = new Transaction;
-$e -> time = 22;
-$f = new Transaction;
-$f -> time = 36;
-$g = new Transaction;
-$g -> time = 36;
-$array = [$a, $b, $c, $d, $e, $f , $g];
-//print_r($array);
-
-echo "===========";
-$sliced_array = slicer($array);
-print_r($sliced_array);
-//slicer($array);
-
 
 
 
 // sortingHat() takes $transactions_merged and sorts them into $transactions_sorted
 
-/*
 function sortingHat($transactions_merged)
 {
+	$transactions_sorted = [];
 	$trades = [];
 	$fees = [];
 	$rest = [];
-	$transactions_sorted = [];
-	
-	$transactions_sliced = slicer($transactions_merged);
-	foreach ($transactions_sliced as $slice){
-		$result = funkySort($slice);
-		$transactions_sorted [] = $result;
-	}
-}
-	*/
-/*
-	while (count($transactions_merged))	{
+	$objects_array = array_shift($transactions_merged);
 
-		$transaction = array_shift($transactions_merged);
 
-			foreach($transactions_merged as $pairable)	{
+		while (count($objects_array)) {
 
-				if (timeCompare($transaction, $pairable) === true) {
-					switch ($pairable -> type)
-					{
-					case "Trade":
-					$trades [] = $pairable;
-					break;
-					case "Other fee":
-					$fees [] = $pairable;
-					break;
-					default:
-					$rest [] = $pairable;
-					break;
-					} 
-				}else {
-					$trades = [];
-					$fees = [];
-					$rest = [];
+		$transaction = array_shift($objects_array);
+		switch ($transaction->type){
+			case 'Trade':
+				$trades [] = $transaction;
+				break;
+				case 'Fee':
+				$fees [] = $transaction;
+				break;
+				default:
+				$rest [] = $transaction;
+				break;
+		}
+//now for each $transaction we want to find other elements with the same time
+			while(count($objects_array)) {
+
+				$pairable = array_shift($objects_array);
+
+				if ($transaction->time === $pairable->time) {
+
+					switch ($transaction->type){
+						case 'Trade':
+							$trades [] = $pairable;
+							break;
+							case 'Fee':
+							$fees [] = $pairable;
+							break;
+							default:
+							$rest [] = $pairable;
+							break;
+						}
+			} else {
+				$sorted = funkySort($trades,$fees,$rest);
+				foreach ($sorted as $element){
+					$transactions_sorted [] = $element;
 				}
-				unset($transactions[$key]);
-				$result = funkySort($trades,$fees,$rest);
-				$transactions_sorted [] = $result;
+				//pairable unshift (it will be new $transaction)
+				array_unshift($objects_array, $pairable);
+				//erasing contents from temporary arrays
+				$trades = [];
+				$fees = [];
+				$rest = [];
+				break;
+				}
 			}
+			$sorted = funkySort($trades,$fees,$rest);
+			foreach ($sorted as $element){
+				$transactions_sorted [] = $element;
+			}
+			$transactions_sorted  = array_filter($transactions_sorted);
+		}
+		return $transactions_sorted;
 	}
-	
-	return $transactions_sorted;
-}
-*/
- 
+
+	$transactions_sorted  = sortingHat($transactions_merged);
+
+
 
 function printToJson(array $transactions_sorted)
 {
 
 	foreach($transactions_sorted as $object) {
-	echo json_encode($object, JSON_PRETTY_PRINT);
+		$values = array_values($object);
+	echo json_encode($values, JSON_PRETTY_PRINT);
 
 	}
 }
-//$transactions_sorted [] =  sortingHat($transactions_merged);printToJson($transactions_sorted);
-// printToJson($transactions_sorted);
+
+printToJson($transactions_sorted);
 
 
 ?>
