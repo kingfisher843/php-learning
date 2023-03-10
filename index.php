@@ -9,8 +9,7 @@ function toJson($file){
 
 	//in case of wrong file
 	if(!$open){
-		echo "Wrong file!";
-		die();
+		die("Wrong file!");
 	} else {
 		echo "Fitting file, time to proceed!\n";
 	}
@@ -55,7 +54,6 @@ function mincer($contents) {
 	} else {
 	$object -> type = $content[3];
 	}
-
 	if ($content[5] < 0){
 		$object -> sell_currency = $content[4];
 		$object -> sell = 0 - $content[5];
@@ -80,7 +78,7 @@ $transactions = mincer($contents);
 function merge($transactions)
 {
 	$transactions_merged = [];
-	while (count($transactions)){
+		while (count($transactions)){
 		$transaction = array_shift($transactions);
 		if ($transaction->type === "Buy" || $transaction->type === "Sell"){
 			$merged = false;
@@ -148,11 +146,6 @@ function sorter($a, $b){
 usort ($transactions_merged, "sorter");
 
 
-function timeCompare($tr1, $tr2) {
-	if ($tr1 -> time === $tr2 -> time)	{
-	return true;
-	}
-}
 
 function funkySort($arr1,$arr2,$arr3)
 {
@@ -160,7 +153,7 @@ function funkySort($arr1,$arr2,$arr3)
 
 	for ($i = 0; $i < count($arr1); $i++){
 		$semifinal[] = $arr1[$i];
-		$semifinal [] = $arr2[$i];
+		$semifinal[] = $arr2[$i];
 	}
 
 	$result = array_merge($semifinal,$arr3);
@@ -171,13 +164,14 @@ function funkySort($arr1,$arr2,$arr3)
 
 // sortingHat() takes $transactions_merged and sorts them into $transactions_sorted
 
-function sortingHat ($transactions_merged)
+function sortingHat($transactions_merged)
 {
 	$transactions_sorted = [];
 	$trades = [];
 	$fees = [];
 	$rest = [];
 	$objects_array = array_shift($transactions_merged);
+
 
 		while (count($objects_array)) {
 
@@ -186,7 +180,7 @@ function sortingHat ($transactions_merged)
 			case 'Trade':
 				$trades [] = $transaction;
 				break;
-				case 'Other fee':
+				case 'Fee':
 				$fees [] = $transaction;
 				break;
 				default:
@@ -204,7 +198,7 @@ function sortingHat ($transactions_merged)
 						case 'Trade':
 							$trades [] = $pairable;
 							break;
-							case 'Other fee':
+							case 'Fee':
 							$fees [] = $pairable;
 							break;
 							default:
@@ -213,27 +207,29 @@ function sortingHat ($transactions_merged)
 						}
 			} else {
 				$sorted = funkySort($trades,$fees,$rest);
-
+				foreach ($sorted as $element){
+					$transactions_sorted [] = $element;
+				}
 				//pairable unshift (it will be new $transaction)
 				array_unshift($objects_array, $pairable);
-				//erasing contents from arrays
+				//erasing contents from temporary arrays
 				$trades = [];
 				$fees = [];
 				$rest = [];
 				break;
+				}
 			}
-			}
-			$sorted_2 = funkySort($trades,$fees,$rest);
+			$sorted = funkySort($trades,$fees,$rest);
 			foreach ($sorted as $element){
-			$transactions_sorted [] = $element;
+				$transactions_sorted [] = $element;
 			}
-			$transactions_sorted = array_filter($transactions_sorted);
+			$transactions_sorted  = array_filter($transactions_sorted);
 		}
 		return $transactions_sorted;
 	}
 
+	$transactions_sorted  = sortingHat($transactions_merged);
 
-$transactions_sorted  = [sortingHat($transactions_merged)];
 
 
 function printToJson(array $transactions_sorted)
@@ -244,10 +240,7 @@ function printToJson(array $transactions_sorted)
 	echo json_encode($values, JSON_PRETTY_PRINT);
 
 	}
-	}
-
-
-
+}
 
 printToJson($transactions_sorted);
 
