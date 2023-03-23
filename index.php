@@ -151,11 +151,11 @@ function funkySort($arr1,$arr2,$arr3)
 {
 	$semifinal = [];
 
-	for ($i = 0; $i<=count($arr1);$i++){
-		$semifinal[] = $arr1[$i];
-		$semifinal[] = $arr2[$i];
-
+foreach ($arr1 as $obj1){
+	foreach ($arr2 as $obj2){
+		array_push($semifinal, $obj1, $obj2);
 	}
+}
 
 	$result = array_merge($semifinal,$arr3);
 	$result = array_filter($result);
@@ -163,38 +163,23 @@ function funkySort($arr1,$arr2,$arr3)
 }
 
 
-
-
-
 // sortingHat() takes $transactions_merged and sorts them into $transactions_sorted
 
 function sortingHat($transactions_merged)
 {
 	$transactions_sorted = [];
-
 	//return array
 	$trades = [];
 	$fees = [];
 	$rest = [];
 	//temporary arrays for sorting
 
-	$objects_array = array_shift($transactions_merged);
 //turns out all transactions was in the subarray of $transactions_merged
 
-		while (count($objects_array)) {
-//this while iterate over all objects; first of them is always $transaction;
-		$transaction = array_shift($objects_array);
+		while (count($transactions_merged)) {
 
-	$trades = [];
-	$fees = [];
-	$rest = [];
-	$objects_array = array_shift($transactions_merged);
-
-
-		while (count($objects_array)) {
-
-		$transaction = array_shift($objects_array);
-		switch ($transaction->type){
+		$transaction = array_shift($transactions_merged);
+		switch ($transaction){
 			case 'Trade':
 				$trades [] = $transaction;
 				break;
@@ -207,13 +192,13 @@ function sortingHat($transactions_merged)
 		}
 
 // $transaction is now in one of the temporary arrays
-			while(count($objects_array)) {
+			while(count($transactions_merged)) {
 //now we want to find objects with the same time
-				$pairable = array_shift($objects_array);
+				$pairable = array_shift($transactions_merged);
 
 				if ($transaction->time === $pairable->time) {
 // if this object has the same time as previous, it's now being sorted.
-					switch ($pairable->type){
+					switch ($pairable){
 						case 'Trade':
 							$trades [] = $pairable;
 							break;
@@ -233,7 +218,7 @@ function sortingHat($transactions_merged)
 						$transactions_sorted [] = $element;
 					}
 				//pairable unshift (it will be new $transaction)
-				array_unshift($objects_array, $pairable);
+				array_unshift($transactions_merged, $pairable);
 				//erasing contents from temporary arrays
 				$trades = [];
 				$fees = [];
@@ -247,11 +232,12 @@ function sortingHat($transactions_merged)
 			foreach ($sorted as $element){
 				$transactions_sorted [] = $element;
 			}
-			$transactions_sorted [] = array_filter($transactions_sorted);
+			$transactions_sorted  = array_filter($transactions_sorted);
+
 				return $transactions_sorted;
 	}
 
-	$transactions_sorted = [sortingHat($transactions_merged)];
+	$transactions_sorted = sortingHat($transactions_merged);
 
 
 
