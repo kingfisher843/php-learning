@@ -162,11 +162,16 @@ function funkySort($arr1,$arr2,$arr3)
 	return $result;
 }
 
+
+
+
+
 // sortingHat() takes $transactions_merged and sorts them into $transactions_sorted
 
 function sortingHat($transactions_merged)
 {
 	$transactions_sorted = [];
+
 	//return array
 	$trades = [];
 	$fees = [];
@@ -200,6 +205,7 @@ function sortingHat($transactions_merged)
 				$rest [] = $transaction;
 				break;
 		}
+
 // $transaction is now in one of the temporary arrays
 			while(count($objects_array)) {
 //now we want to find objects with the same time
@@ -218,6 +224,7 @@ function sortingHat($transactions_merged)
 							$rest [] = $pairable;
 							break;
 						}
+
 	//$pairable is also sorted to temporary arrays
 				} else {
 				//if time happens to change we need to dump contents of temporary arrays into final array
@@ -231,6 +238,7 @@ function sortingHat($transactions_merged)
 				$trades = [];
 				$fees = [];
 				$rest = [];
+
 				}
 			}
 		}
