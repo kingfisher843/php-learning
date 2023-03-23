@@ -140,109 +140,113 @@ function mergeTransactions(Transaction $t1, Transaction $t2)
 
 $transactions_merged [] = merge($transactions);
 
+
 function sorter($a, $b){
 	return $a->time < $b->time;
 }
 usort ($transactions_merged, "sorter");
 
 
-
 function funkySort($arr1,$arr2,$arr3)
 {
 	$semifinal = [];
 
-	for ($i = 0; $i < count($arr1); $i++){
+	for ($i = 0; $i<=count($arr1);$i++){
 		$semifinal[] = $arr1[$i];
 		$semifinal[] = $arr2[$i];
+
 	}
 
 	$result = array_merge($semifinal,$arr3);
+	$result = array_filter($result);
 	return $result;
 }
-
-
 
 // sortingHat() takes $transactions_merged and sorts them into $transactions_sorted
 
 function sortingHat($transactions_merged)
 {
 	$transactions_sorted = [];
+	//return array
 	$trades = [];
 	$fees = [];
 	$rest = [];
-	$objects_array = array_shift($transactions_merged);
+	//temporary arrays for sorting
 
+	$objects_array = array_shift($transactions_merged);
+//turns out all transactions was in the subarray of $transactions_merged
 
 		while (count($objects_array)) {
-
+//this while iterate over all objects; first of them is always $transaction;
 		$transaction = array_shift($objects_array);
+
 		switch ($transaction->type){
 			case 'Trade':
 				$trades [] = $transaction;
 				break;
-				case 'Fee':
+				case 'Other fee':
 				$fees [] = $transaction;
 				break;
 				default:
 				$rest [] = $transaction;
 				break;
 		}
-//now for each $transaction we want to find other elements with the same time
+// $transaction is now in one of the temporary arrays
 			while(count($objects_array)) {
-
+//now we want to find objects with the same time
 				$pairable = array_shift($objects_array);
 
 				if ($transaction->time === $pairable->time) {
-
-					switch ($transaction->type){
+// if this object has the same time as previous, it's now being sorted.
+					switch ($pairable->type){
 						case 'Trade':
 							$trades [] = $pairable;
 							break;
-							case 'Fee':
+							case 'Other fee':
 							$fees [] = $pairable;
 							break;
 							default:
 							$rest [] = $pairable;
 							break;
 						}
-			} else {
-				$sorted = funkySort($trades,$fees,$rest);
-				foreach ($sorted as $element){
-					$transactions_sorted [] = $element;
-				}
+	//$pairable is also sorted to temporary arrays
+				} else {
+				//if time happens to change we need to dump contents of temporary arrays into final array
+					$sorted = funkySort($trades,$fees,$rest);
+					foreach ($sorted as $element){
+						$transactions_sorted [] = $element;
+					}
 				//pairable unshift (it will be new $transaction)
 				array_unshift($objects_array, $pairable);
 				//erasing contents from temporary arrays
 				$trades = [];
 				$fees = [];
 				$rest = [];
-				break;
 				}
 			}
+		}
+			//at the end last chunk is sorted and pushed into final array
 			$sorted = funkySort($trades,$fees,$rest);
 			foreach ($sorted as $element){
 				$transactions_sorted [] = $element;
 			}
-			$transactions_sorted  = array_filter($transactions_sorted);
-		}
-		return $transactions_sorted;
+			$transactions_sorted [] = array_filter($transactions_sorted);
+				return $transactions_sorted;
 	}
 
-	$transactions_sorted  = sortingHat($transactions_merged);
+	$transactions_sorted = [sortingHat($transactions_merged)];
 
 
 
-function printToJson(array $transactions_sorted)
+function printToJson($transactions_sorted)
 {
 
 	foreach($transactions_sorted as $object) {
 		$values = array_values($object);
 	echo json_encode($values, JSON_PRETTY_PRINT);
-
 	}
 }
 
-printToJson($transactions_sorted);
-
+ printToJson($transactions_sorted);
 
 ?>
