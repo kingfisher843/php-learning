@@ -180,6 +180,15 @@ function sortingHat($transactions_merged)
 //this while iterate over all objects; first of them is always $transaction;
 		$transaction = array_shift($objects_array);
 
+	$trades = [];
+	$fees = [];
+	$rest = [];
+	$objects_array = array_shift($transactions_merged);
+
+
+		while (count($objects_array)) {
+
+		$transaction = array_shift($objects_array);
 		switch ($transaction->type){
 			case 'Trade':
 				$trades [] = $transaction;
