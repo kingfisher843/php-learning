@@ -1,23 +1,19 @@
 
 <?php
 
+$contents = toJson($argv[1]);
 
 // toJson read the data as the csv file and push it into array $contents
 function toJson($file){
 	//getting data
 	$open = fopen($file,"r+");
 
-	//in case of wrong file
+	//case of wrong file
 	if(!$open){
 		die("Wrong file!");
-	} else {
-		echo "Fitting file, time to proceed!\n";
 	}
 
-
-
 	// pushing data into $contents
-
 	while($data = fgetcsv($open, 1024, ",")){
 		$contents[] = $data;
 	}
@@ -26,7 +22,7 @@ function toJson($file){
 	return $contents;
 }
 
-$contents = toJson($argv[1]);
+
 
 // Extracting headers from contents
 	$headers = array_shift($contents);
@@ -138,7 +134,8 @@ function mergeTransactions(Transaction $t1, Transaction $t2)
 	return $t1;
 }
 
-$transactions_merged [] = merge($transactions);
+$transactions_merged = merge($transactions);
+
 
 
 function sorter($a, $b){
@@ -161,11 +158,63 @@ foreach ($arr1 as $obj1){
 	$result = array_filter($result);
 	return $result;
 }
+//var_dump($transactions_merged); die();
+
+function sortingHat($transactions_merged)
+ {
+	 //array with results
+	$transactions_sorted = [];
+	//temporary arrays - categories, current stack
+	$trades = [];
+	$fees = [];
+	$rest = [];
+	$current_stack = [];
+	$sorted = [];
+
+	while(count($transactions_merged)){
+		$first_element = array_shift($transactions_merged);
+		$current_stack [] = $first_element;
+
+		while(count($transactions_merged)){
+			$second_element = array_shift($transactions_merged);
+
+			if ($first_element->time === $second_element->time){
+				$current_stack [] = $second_element;
+			} else {
+					foreach ($current_stack as $element){
+						switch ($element->type) {
+							case 'Trade':
+								$trades [] = $element;
+								break;
+							case 'Other fee':
+								$fees [] = $element;
+							default:
+								$rest [] = $element;
+								break;
+						}
+
+					}
+
+				$sorted [] = funkySort($trades, $fees, $rest);
+				$trades = [];
+				$fees = [];
+				$rest = [];
+				$current_stack = [];
+
+			}
+
+		}
+
+	}
+	$transactions_sorted = array_filter($sorted);
+	return $transactions_sorted;
+}
+
 
 
 // sortingHat() takes $transactions_merged and sorts them into $transactions_sorted
 
-function sortingHat($transactions_merged)
+/*function sortingHat($transactions_merged)
 {
 	$transactions_sorted = [];
 	//return array
@@ -174,12 +223,11 @@ function sortingHat($transactions_merged)
 	$rest = [];
 	//temporary arrays for sorting
 
-//turns out all transactions was in the subarray of $transactions_merged
 
 		while (count($transactions_merged)) {
 
 		$transaction = array_shift($transactions_merged);
-		switch ($transaction){
+		switch ($transaction[3]){
 			case 'Trade':
 				$trades [] = $transaction;
 				break;
@@ -198,7 +246,7 @@ function sortingHat($transactions_merged)
 
 				if ($transaction->time === $pairable->time) {
 // if this object has the same time as previous, it's now being sorted.
-					switch ($pairable){
+					switch ($pairable[3]){
 						case 'Trade':
 							$trades [] = $pairable;
 							break;
@@ -235,10 +283,9 @@ function sortingHat($transactions_merged)
 			$transactions_sorted  = array_filter($transactions_sorted);
 
 				return $transactions_sorted;
-	}
+	}*/
 
 	$transactions_sorted = sortingHat($transactions_merged);
-
 
 
 function printToJson($transactions_sorted)
